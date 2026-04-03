@@ -1,0 +1,186 @@
+---
+title: "t-test demo"
+author: "Wing-Ho Ko"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(broom)
+library(MKpower)
+library(effectsize)
+```
+
+## Orca example (simulated data)
+
+Suppose we have tagged 20 orcas in the Washington shore, and we recorded their weights one year apart. The data is stored in the orcas_simulated.csv file in the data folder
+
+Perform an appropriate t-test to check if there’s discernable difference between the weights of orcas between the two measurement
+
+**t-test to perform**: the observations are paired. Thus a paired t-test is needed
+
+Load the data and inspect it
+
+```{r}
+orcas <- read_csv("data/orca_simulated.csv")
+glimpse(orcas)
+```
+
+Subset data that can be used as input to t.test()
+
+```{r}
+orcas_1 <- orcas |> filter(year==2023) |> arrange(tag)
+orcas_2 <- orcas |> filter(year==2024) |> arrange(tag)
+
+orcas_wt_1 <- orcas_1$weight_kg
+orcas_wt_2 <- orcas_2$weight_kg
+```
+
+Perform t.test. Defaulted to printing out the results
+
+```{r}
+t.test(orcas_wt_2, orcas_wt_1, alternative="two.sided", paired=TRUE)
+```
+
+Assign the `t.test()` results to variable
+
+```{r}
+orcas_t <- t.test(orcas_wt_2, orcas_wt_1, alternative="two.sided", paired=TRUE)
+```
+
+Extract the p-value programatically:
+
+```{r}
+print(orcas_t$p.value)
+```
+
+Extract the point estimate and confidence interval programatically:
+
+```{r}
+print(orcas_t$estimate)
+```
+
+```{r}
+print(orcas_t$conf.int)
+```
+
+Alternatively, use `tidy()` from the `broom` package to create a tidy data frame from the t test output
+
+```{r}
+tidy(orcas_t)
+```
+
+
+## t-test revisited
+
+Run different t-tests against the orca data
+
+```{r}
+orcas_t1 <- t.test(orcas_wt_2, orcas_wt_1, alternative="two.sided", paired=TRUE)
+orcas_t2 <- t.test(orcas_wt_2, orcas_wt_1, alternative="two.sided")
+```
+
+Print the different p-values obtained. Observed that p-values become worse with paired vs (unpaired pooled) vs (unpaired unpooled)
+
+```{r}
+print(c(orcas_t1$p.value, orcas_t2$p.value))
+```
+
+### Statistical power
+
+Check the statistical power assuming that the difference is "real"
+
+```{r}
+orcas_diff <- mean(orcas_wt_1) - mean(orcas_wt_2)
+orcas_diff_sd <- sd(orcas_wt_1 - orcas_wt_2)
+
+power.t.test(n=20, delta=orcas_diff, sd=orcas_diff_sd, sig.level=0.05, type="paired")
+```
+
+If instead we use an unpaired t-test (there `power.welch.t.test()` function comes from the package `MKpower`):
+
+```{r}
+orcas_diff <- mean(orcas_wt_1) - mean(orcas_wt_2)
+orcas_sd_1 <- sd(orcas_wt_1)
+orcas_sd_2 <- sd(orcas_wt_2)
+
+power.welch.t.test(n=20, delta=orcas_diff, sd1=orcas_sd_1, sd2=orcas_sd_2)
+```
+
+Asking the question differently: how big does `n` needs to be for power = 0.80?
+
+```{r}
+power.t.test(
+  power=0.80, delta=orcas_diff, sd=orcas_diff_sd, sig.level=0.05, 
+  type="paired"
+)
+```
+
+### Q-Q plot, skewness and kurtosis
+
+Use the precipitation data from SeaTac airport, year 2000 and year 2017. Focus only on wet-day data (i.e., days where PRCP > 0)
+
+```{r}
+seatac2000 <- read_csv("data/SeaTac_prcp_2000.csv")
+seatac2017 <- read_csv("data/SeaTac_prcp_2017.csv")
+
+seatac2000 <- seatac2000 |> filter(PRCP > 0) |> select(DATE | PRCP)
+seatac2017 <- seatac2017 |> filter(PRCP > 0) |> select(DATE | PRCP)
+```
+
+```{r}
+length(seatac2000$PRCP)
+```
+
+```{r}
+length(seatac2017$PRCP)
+```
+
+While our sample size is large. Weather is correlated events, so perhaps we should be more conservative and treat the data as moderately sized.
+
+Check if the normality assumption is acceptable for the two sets of data:
+
+```{r}
+ggplot(seatac2000, aes(sample=PRCP)) + geom_qq() + geom_qq_line()
+```
+
+```{r}
+ggplot(seatac2017, aes(sample=PRCP)) + geom_qq() + geom_qq_line()
+```
+
+Both data have heavy right skew, as can be checked from computing skewness:
+
+```{r}
+e1071::skewness(seatac2000$PRCP)
+```
+
+```{r}
+e1071::skewness(seatac2017$PRCP)
+```
+
+So we should probably refrain from using t-test
+
+
+### Wilcoxon test
+
+Let's perform a Wilcoxon test instead:
+
+```{r}
+wilcox.test(seatac2000$PRCP, seatac2017$PRCP)
+```
+
+We see that the Wilcoxon test is somewhat inconclusive. There are apparent differences, but not highly statistically significant.
+
+### Effect size
+
+Let's also consider effect size:
+
+```{r}
+cohens_d(seatac2000$PRCP, seatac2017$PRCP, pooled=FALSE)
+```
+
+We see that Cohen's d that is between 0.2 and 0.5, so it the difference is small in realistic terms.

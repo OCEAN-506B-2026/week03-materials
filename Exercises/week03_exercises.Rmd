@@ -1,0 +1,55 @@
+---
+title: "Week 3 exercises"
+author: "Wing-Ho Ko"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Loading common packages
+
+```{r}
+
+```
+
+## Exercise 1: summary statistics on the penguins dataset
+
+```{r}
+data(penguins, package="palmerpenguins")
+```
+
+Work with the penguins dataset.
+
+1. Obtain the summary statistics on bill length, flipper length, and body mass. Also count the occurrences of the two sexes.
+
+2. For each unique combination of species and residing island of penguins, find the mean and standard deviation in body mass.
+
+## Exercise 2: hypothesis testing
+
+1. Suppose you reject the null hypothesis in a two-tailed test. Will you reject the corresponding null hypothesis in a one-tailed test, at the same significance level 𝛼?
+
+2. You are trying to determine if there’s real difference in the mean between two populations A and B. Suppose the difference is real, by increasing the sample size, would you expect…
+
+  a. Higher statistical power?
+  b. Higher effect size?
+  c. Lower p-value?
+
+## Exercise 3: Salish Sea salinity (simulated data)
+
+Samples of seawater at near-surface depth ($d$ < 5 m) were collected at 3 different locations in the Salish Sea. The data can be found in the file `salish_cruise_simulated_1.csv`. Perform an appropriate t-test on the difference in mean salinity between the Tacoma Narrows samples and the Main Basin samples
+
+## Exercise 4: Salish Sea salinity revisited
+
+Going back to the Salish Sea water samples in Exercise #3. Determine if t-test was appropriate.
+
+## Exercise 5: More Salish Sea data (simulated data)
+
+More Salish Sea data seawater observations were taken at the 3 locations as in example 1, and the results are collected in the file salish_cruise_simulated_2.csv. This time, each set of data was collected over a broader range of location.
+
+1. Check if t-test is still appropriate for comparisons between the Tacoma Narrows and the Main Basin samples
+
+2. Perform the Wilcoxon-Mann-Whitney rank sum test on the comparison of salinity between the Main Basin and the Tacoma Narrows. Is the difference statistically significant (=discernible)?
+
+3. In addition, compute the effect size of the observed difference
+

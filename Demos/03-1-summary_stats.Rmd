@@ -1,0 +1,108 @@
+---
+title: "Summary statistics in R"
+author: "Wing-Ho Ko"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load the packages we'll need
+
+```{r}
+library(tidyverse)
+```
+
+## Summary statistics
+
+Keep a simpler dataframe for the summary statistics examples below
+
+```{r}
+data(storms, package="dplyr")
+```
+
+Simplify the dataset a little bit
+
+```{r}
+storms_sim <- storms |>
+  select(name:hour | status:pressure)
+```
+
+```{r}
+glimpse(storms_sim)
+```
+
+Calculate basic summary statistics using `summary()`
+
+```{r}
+summary(storms_sim)
+```
+
+Calculate the average category directly. Notice that in this case NA propagates....
+
+```{r}
+mean(storms$category)
+```
+
+To omit NA's, add the named argument `na.rm=TRUE`
+
+```{r}
+category_mean <- mean(storms$category, na.rm=TRUE)
+print(category_mean)
+```
+
+Similarly, to obtain standard deviation we may do (note that R computes the standard deviation that derives from the unbiased point estimator for variance):
+
+```{r}
+category_sd <- sd(storms$category, na.rm=TRUE)
+print(category_sd)
+```
+
+For median, use `median()` instead of `mean()`
+
+```{r}
+median(storms$category, na.rm=TRUE)
+```
+
+More generally, use `quantile()` for quantiles:
+
+```{r}
+quantile(storms$category, 0.25, na.rm=TRUE)
+```
+
+We can bundle multiple calculations of summary statistics using `summarize()`
+
+```{r}
+storms_sim |> summarise(
+  mean_wind = mean(wind, na.rm=TRUE),
+  sd_wind = sd(wind, na.rm=TRUE),
+  mean_pres = mean(pressure, na.rm=TRUE),
+  sd_pres = sd(pressure, na.rm=TRUE)
+)
+```
+
+## Grouped summary statistics
+
+Calculate the monthly average for wind speed
+
+```{r}
+grouped <- storms |> group_by(month) |>
+  summarize(
+    wind_mean = mean(wind, na.rm=TRUE),
+    wind_sd = sd(wind, na.rm=TRUE),
+  )
+
+grouped
+```
+
+Calculate the for wind speed per year-month
+
+```{r}
+grouped2 <- storms |> group_by(year, month) |>
+  summarize(
+    wind_mean = mean(wind, na.rm=TRUE),
+    wind_sd = sd(wind, na.rm=TRUE),
+  ) |> ungroup()
+
+grouped2
+```

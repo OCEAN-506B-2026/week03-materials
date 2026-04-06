@@ -53,3 +53,9 @@ More Salish Sea data seawater observations were taken at the 3 locations as in e
 
 3. In addition, compute the effect size of the observed difference
 
+## (Optional) Feedback questions
+
+1. Are there any topic(s) from this week that still confuse you?
+
+2. Which activities work and which doesn't? What do you want to see change and what do you want to keep?
+

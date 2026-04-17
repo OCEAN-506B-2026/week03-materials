@@ -155,11 +155,21 @@ ggplot(seatac2017, aes(sample=PRCP)) + geom_qq() + geom_qq_line()
 Both data have heavy right skew, as can be checked from computing skewness:
 
 ```{r}
-e1071::skewness(seatac2000$PRCP)
+e1071::skewness(seatac2000$PRCP, type=2)
 ```
 
 ```{r}
-e1071::skewness(seatac2017$PRCP)
+e1071::skewness(seatac2017$PRCP, type=2)
+```
+
+We can also check the kurtosis:
+
+```{r}
+e1071::kurtosis(seatac2000$PRCP, type=2)
+```
+
+```{r}
+e1071::kurtosis(seatac2017$PRCP, type=2)
 ```
 
 So we should probably refrain from using t-test
